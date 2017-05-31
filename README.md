@@ -7,3 +7,17 @@
 [![Test Coverage](https://codeclimate.com/github/grigori-gru/project-lvl3-s94/badges/coverage.svg)](https://codeclimate.com/github/grigori-gru/project-lvl3-s94/coverage)
 
 [![Code Climate](https://codeclimate.com/github/grigori-gru/project-lvl3-s94/badges/gpa.svg)](https://codeclimate.com/github/grigori-gru/project-lvl3-s94)
+
+
+Package for page loading.
+
+                                      INSTALL
+
+npm install pro3
+
+                                      OPTIONS
+
+--output <directory> <url>
+
+$ page-loader --output /var/tmp https://hexlet.io/courses
+$ open /var/tmp/hexlet-io-courses.html

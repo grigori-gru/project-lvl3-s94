@@ -4,7 +4,7 @@ import fs from 'mz/fs';
 import pageloader from '../src/';
 import getPath from '../src/pathAdapter';
 
-const url = 'http://hexlet.io';
+const url = 'http://hexlet.io/courses/';
 const data = 'data';
 
 describe('test', () => {

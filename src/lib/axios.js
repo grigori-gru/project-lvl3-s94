@@ -4,5 +4,3 @@ import httpAdapter from 'axios/lib/adapters/http';
 axios.defaults.adapter = httpAdapter;
 
 export default axios;
-
-// axios.defaults.host = url;
