@@ -1,5 +1,5 @@
-import axios from 'axios';
 import fs from 'mz/fs';
+import axios from './lib/axios';
 import getPath from './pathAdapter';
 
 export default (dir, url) => {
