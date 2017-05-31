@@ -1,7 +1,7 @@
 install:
 				npm install
 start:
-				npm run babel-node -- src/bin/gendiff.js
+				npm run babel-node -- src/bin/page-loader.js
 lint:
 				npm run eslint -- src __tests__
 publish:
