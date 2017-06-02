@@ -6,16 +6,16 @@ import pageloader from '../src/';
 import pathAdapter from '../src/lib/pathAdapter';
 
 
-const url = 'http://ru.hexlet.io/courses/';
+const url = 'http://hexlet.io/courses/';
 // const data = 'data';
 const dir = fs.mkdtempSync(`${os.tmpdir()}/`);
-const pathFile = pathAdapter.getDir(dir, pathAdapter.getName(url));
+const pathFile = pathAdapter.getPath(dir, pathAdapter.getName(url));
 
 describe('test', () => {
   test('test resourse load', done =>
     pageloader(dir, url)
     .then(() => fs.readFile(pathFile, 'utf8'))
-      .then(data => expect(data).not.toBe(undefined))
+      .then(data => expect(data).not.toBe(null))
       .then(done)
       .catch(done.fail));
 });

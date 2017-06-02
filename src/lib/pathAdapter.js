@@ -8,11 +8,22 @@ const getName = (uri) => {
   return base + (ext || '.html');
 };
 
-const getDir = (dir, name) => path.join(dir, name);
+const getPath = (dir, name) => path.join(dir, name);
 
 const getFolder = (dir, fileName) => {
   const { name } = path.parse(fileName);
-  return getDir(dir, `${name}_files`);
+  return getPath(dir, `${name}_files`);
 };
 
-export default { getName, getDir, getFolder };
+const getBase = (uri) => {
+  const { protocol, host } = url.parse(uri);
+  return url.format({ protocol, host });
+};
+
+const getUrl = (base, uri) => {
+  const urlObj = url.parse(uri);
+  const result = urlObj.protocol ? uri : url.resolve(getBase(base), uri);
+  return result;
+};
+
+export default { getBase, getName, getPath, getFolder, getUrl };

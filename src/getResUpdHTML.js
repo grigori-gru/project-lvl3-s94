@@ -4,7 +4,7 @@ import pathAdapter from './lib/pathAdapter';
 
 const parseUrl = (dir, item) => {
   const itemObj = url.parse(item);
-  const pathname = pathAdapter.getDir(dir, pathAdapter.getName(item));
+  const pathname = pathAdapter.getPath(dir, pathAdapter.getName(item));
   const newObj = {
     protocol: 'file',
     pathname,
@@ -22,9 +22,9 @@ export default (uri, dir, res) => {
       const address = $(el).attr(tags[tag]);
       if (address) {
         parseUrl(dir, address);
-        const newAddress = address;
+        const newAddress = parseUrl(dir, address);
         $(el).attr(tags[tag], newAddress);
-        acc.push(newAddress);
+        acc.push(address);
       }
       return el;
     });
