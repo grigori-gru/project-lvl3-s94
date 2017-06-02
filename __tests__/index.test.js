@@ -1,19 +1,21 @@
-import nock from 'nock';
+// import nock from 'nock';
 import os from 'os';
 import fs from 'mz/fs';
-import path from 'path';
+// import path from 'path';
 import pageloader from '../src/';
-import getName from '../src/pathAdapter';
+import pathAdapter from '../src/lib/pathAdapter';
 
 
-const url = 'http://hexlet.io/courses/';
-const data = 'data';
+const url = 'http://ru.hexlet.io/courses/';
+// const data = 'data';
 const dir = fs.mkdtempSync(`${os.tmpdir()}/`);
+const pathFile = pathAdapter.getDir(dir, pathAdapter.getName(url));
 
 describe('test', () => {
-  test('test cheerio', done =>
+  test('test resourse load', done =>
     pageloader(dir, url)
-      .then(() => expect(1).toBe(1))
+    .then(() => fs.readFile(pathFile, 'utf8'))
+      .then(data => expect(data).not.toBe(undefined))
       .then(done)
       .catch(done.fail));
 });

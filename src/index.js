@@ -1,22 +1,32 @@
 import fs from 'mz/fs';
-import path from 'path';
 import axios from './lib/axios';
-import getName from '../src/pathAdapter';
+import pathAdapter from './lib/pathAdapter';
 import getResourses from './load';
 
+const write = (folder, item) => {
+  const itemName = pathAdapter.getName(item);
+  const itemPath = pathAdapter.getDir(folder, itemName);
+  return axios({
+    method: 'get',
+    url: item,
+    baseURL: 'http://hexlet.io',
+    responseType: 'arraybuffer',
+  }).then(res =>
+    fs.writeFile(itemPath, res.data))
+    .catch(err => err);
+};
 
 export default (dir, url) => {
-  const fileName = getName(url);
-  const pathFile = path.join(dir, fileName);
-  const { name } = path.parse(fileName);
-  const folderName = path.join(dir, name);
+  const fileName = pathAdapter.getName(url);
+  const pathFile = pathAdapter.getDir(dir, fileName);
+  const folderName = pathAdapter.getFolder(dir, fileName);
   fs.mkdirSync(folderName);
 
-  console.log(folderName);
   return axios.get(url)
     .then((res) => {
-      const [resourseUrl, newRes] = getResourses(url, dir, res);
-      console.log(newRes.data);
+      const [resourseUrl, newRes] = getResourses(url, folderName, res);
       fs.writeFile(pathFile, newRes.data);
-    });
+      return resourseUrl;
+    })
+    .then(res => Promise.all(res.map(item => write(folderName, item))));
 };

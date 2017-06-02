@@ -1,24 +1,29 @@
 import cheerio from 'cheerio';
 import url from 'url';
+import pathAdapter from './lib/pathAdapter';
 
-const parseUrl = (mainHost, item) => {
-  const urlObj = url.parse(item);
-  const host = (urlObj.host || mainHost);
-  urlObj.host = host;
-  return url.format(urlObj);
+const parseUrl = (dir, item) => {
+  const itemObj = url.parse(item);
+  const pathname = pathAdapter.getDir(dir, pathAdapter.getName(item));
+  const newObj = {
+    protocol: 'file',
+    pathname,
+    host: null,
+    hostname: null,
+  };
+  return url.format({ ...itemObj, ...newObj });
 };
 
 export default (uri, dir, res) => {
-  const { host } = url.parse(uri);
   const $ = cheerio.load(res.data);
   const tags = { script: 'src', link: 'href', img: 'src' };
   const result = Object.keys(tags).reduce((acc, tag) => {
     $(tag).map((i, el) => {
       const address = $(el).attr(tags[tag]);
       if (address) {
-        const newAddress = parseUrl(host, address);
+        parseUrl(dir, address);
+        const newAddress = address;
         $(el).attr(tags[tag], newAddress);
-        // console.log($(el).attr(tags[tag]));
         acc.push(newAddress);
       }
       return el;
