@@ -1,17 +1,17 @@
 import fs from 'mz/fs';
 import axios from './lib/axios';
-import pathAdapter from './lib/pathAdapter';
+import { getName, getPath, getUrl } from './lib/pathAdapter';
 
-export default (url, folder, item) => {
-  const itemName = pathAdapter.getName(item);
-  const itemPath = pathAdapter.getPath(folder, itemName);
+export default (url, dir, homeUrl = '') => {
+  const itemName = getName(url);
+  const itemPath = getPath(dir, itemName);
   const options = {
     method: 'get',
-    url: pathAdapter.getUrl(url, item),
+    url: getUrl(url, homeUrl),
     responseType: 'arraybuffer',
   };
 
   return axios(options)
     .then(res => fs.writeFile(itemPath, res.data))
-    .catch(err => err);
+    .catch(err => console.log(err));
 };

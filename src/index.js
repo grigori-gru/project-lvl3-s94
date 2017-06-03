@@ -1,25 +1,24 @@
 import fs from 'mz/fs';
-import axios from './lib/axios';
-import pathAdapter from './lib/pathAdapter';
-import getResUpdHTML from './getResUpdHTML';
+import { getFolder, getPath } from './lib/pathAdapter';
+import parseHTML from './lib/parseHTML/';
 import loadAndWrite from './loadAndWrite';
 
 export default (dir, url) => {
-  const fileName = pathAdapter.getName(url);
-  const pathFile = pathAdapter.getPath(dir, fileName);
-  const folderName = pathAdapter.getFolder(dir, fileName);
-  fs.mkdirSync(folderName);
+  const folder = getFolder(dir, url);
+  const pathFile = getPath(dir, url);
 
-  return axios.get(url)
-    .then((res) => {
-      const [resourseUrl, newRes] = getResUpdHTML(url, folderName, res);
-      fs.writeFile(pathFile, newRes.data);
-      return resourseUrl;
+  let resourseUrl;
+  let newData;
+
+  return fs.mkdir(folder)
+    .then(() => loadAndWrite(url, dir))
+    .then(() => fs.readFile(pathFile, 'utf8'))
+    .then((data) => {
+      [resourseUrl, newData] = parseHTML(data, folder);
+      return fs.writeFile(pathFile, newData);
     })
-    .then((res) => {
-      fs.writeFile(pathAdapter.getPath(dir, 'res.txt'), res.join('\n\n'));
-      return res;
-    })
-    .then(res => Promise.all(res.map(item => loadAndWrite(url, folderName, item))))
+    .then(() =>
+      Promise.all(resourseUrl.map(itemUrl =>
+        loadAndWrite(itemUrl, folder, url))))
     .catch(err => console.log(err));
 };

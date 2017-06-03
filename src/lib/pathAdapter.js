@@ -1,29 +1,24 @@
 import path from 'path';
 import url from 'url';
 
-const getName = (uri) => {
-  const { host, pathname } = url.parse(uri, true);
+export const getName = (uri) => {
+  const newUrl = uri[0] === '/' ? uri.slice(1) : uri;
+  const { host, pathname } = url.parse(newUrl, true);
   const { ext, dir, name } = path.parse([host, pathname].join(''));
   const base = (path.join(dir, name)).replace(/\W+/g, '-');
-  return base + (ext || '.html');
+  return `${base}${(ext || '.html')}`;
 };
 
-const getPath = (dir, name) => path.join(dir, name);
+export const getPath = (dir, uri) => path.join(dir, getName(uri));
 
-const getFolder = (dir, fileName) => {
-  const { name } = path.parse(fileName);
-  return getPath(dir, `${name}_files`);
+export const getFolder = (dir, uri) => {
+  const { name } = path.parse(getName(uri));
+  return path.join(dir, `${name}_files`);
 };
 
-const getBase = (uri) => {
-  const { protocol, host } = url.parse(uri);
-  return url.format({ protocol, host });
+export const getUrl = (uri, mainUrl) => {
+  const { protocol, host } = url.parse(mainUrl);
+  const base = url.format({ protocol, host });
+  const { hostname } = url.parse(uri);
+  return hostname ? uri : url.resolve(base, uri);
 };
-
-const getUrl = (base, uri) => {
-  const urlObj = url.parse(uri);
-  const result = urlObj.protocol ? uri : url.resolve(getBase(base), uri);
-  return result;
-};
-
-export default { getBase, getName, getPath, getFolder, getUrl };
