@@ -13,7 +13,10 @@ const loadAndSave = (address, dir, homeUrl = '') => {
   const newAddress = getUrl(address, homeUrl);
 
   return axios.get(newAddress, { responseType: 'arraybuffer' })
-    .then(res => fs.writeFile(itemPath, res.data))
+    .then((res) => {
+      flag('\x1b[36m', `file ${newAddress} loaded`);
+      return fs.writeFile(itemPath, res.data);
+    })
     .catch(err => err);
 };
 
@@ -57,16 +60,20 @@ export default (dir, address) => {
   let parsedData;
 
   return fs.mkdir(rootDir)
-    .then(() => loadAndSave(address, dir))
+    .then(() => {
+      flag('\x1b[33m', `dir ${rootDir} is made`);
+      return loadAndSave(address, dir);
+    })
     .then(() => fs.readFile(pathFile, 'utf8'))
     .then((data) => {
-      flag(`file ${pathFile} saved`);
       parsedData = parseHTML(data, rootDir);
       return fs.writeFile(pathFile, parsedData.newHtml);
     })
-    .then(() =>
-      Promise.all(parsedData.links.map(itemUrl =>
-        loadAndSave(itemUrl, rootDir, address))))
+    .then(() => {
+      flag('\x1b[34m', 'HTML updated');
+      return Promise.all(parsedData.links.map(itemUrl =>
+        loadAndSave(itemUrl, rootDir, address)));
+    })
     .then(() => 'Done!')
     .catch(err => console.log(err));
 };
