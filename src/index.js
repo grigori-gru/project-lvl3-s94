@@ -1,29 +1,72 @@
+import url from 'url';
+import cheerio from 'cheerio';
 import fs from 'mz/fs';
 import debug from 'debug';
-import { getFolder, getPath } from './lib/pathAdapter';
-import parseHTML from './lib/parseHTML/';
-import loadAndWrite from './loadAndWrite';
+import axios from './lib/axios';
+import { getUrl, getName, getDirName, getFilePath } from './lib/pathParse';
 
 const flag = debug('page-loader');
 
-export default (dir, url) => {
-  const folder = getFolder(dir, url);
-  const pathFile = getPath(dir, url);
+const loadAndSave = (address, dir, homeUrl = '') => {
+  const itemName = getName(address);
+  const itemPath = getFilePath(dir, itemName);
+  const newAddress = getUrl(address, homeUrl);
 
-  let resourseUrl;
-  let newData;
+  return axios.get(newAddress, { responseType: 'arraybuffer' })
+    .then(res => fs.writeFile(itemPath, res.data))
+    .catch(err => err);
+};
 
-  return fs.mkdir(folder)
-    .then(() => loadAndWrite(url, dir))
+const parseUrl = (dir, item) => {
+  const itemObj = url.parse(item);
+  const pathname = getFilePath(dir, item);
+  const newObj = {
+    protocol: 'file',
+    pathname,
+    host: null,
+    hostname: null,
+  };
+
+  return url.format({ ...itemObj, ...newObj });
+};
+
+const parseHTML = (res, dir) => {
+  const $ = cheerio.load(res);
+  const tags = { script: 'src', link: 'href', img: 'src' };
+
+  const links = Object.keys(tags)
+    .reduce((acc, tag) => {
+      $(tag).each((i, el) => {
+        const address = $(el).attr(tags[tag]);
+        if (address) {
+          const newAddress = parseUrl(dir, address);
+          $(el).attr(tags[tag], newAddress);
+          acc.push(address);
+        }
+        return el;
+      });
+      return acc;
+    }, []);
+
+  return { links, newHtml: $.html() };
+};
+
+export default (dir, address) => {
+  const rootDir = getDirName(dir, address);
+  const pathFile = getFilePath(dir, address);
+  let parsedData;
+
+  return fs.mkdir(rootDir)
+    .then(() => loadAndSave(address, dir))
     .then(() => fs.readFile(pathFile, 'utf8'))
     .then((data) => {
       flag(`file ${pathFile} saved`);
-      [resourseUrl, newData] = parseHTML(data, folder);
-      console.log(resourseUrl);
-      return fs.writeFile(pathFile, newData);
+      parsedData = parseHTML(data, rootDir);
+      return fs.writeFile(pathFile, parsedData.newHtml);
     })
     .then(() =>
-      Promise.all(resourseUrl.map(itemUrl =>
-        loadAndWrite(itemUrl, folder, url))))
+      Promise.all(parsedData.links.map(itemUrl =>
+        loadAndSave(itemUrl, rootDir, address))))
+    .then(() => 'Done!')
     .catch(err => console.log(err));
 };

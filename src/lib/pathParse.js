@@ -9,9 +9,9 @@ export const getName = (uri) => {
   return `${base}${(ext || '.html')}`;
 };
 
-export const getPath = (dir, uri) => path.join(dir, getName(uri));
+export const getFilePath = (dir, uri) => path.join(dir, getName(uri));
 
-export const getFolder = (dir, uri) => {
+export const getDirName = (dir, uri) => {
   const { name } = path.parse(getName(uri));
   return path.join(dir, `${name}_files`);
 };

@@ -1,10 +1,9 @@
 import nock from 'nock';
 import os from 'os';
 import fs from 'mz/fs';
-import loadAndWrite from '../src/loadAndWrite';
-import parseUrl from '../src/lib/parseHTML/parseUrl';
-// import parseHTML from '../src/lib/parseHTML/';
-import { getName, getPath, getFolder, getUrl } from '../src/lib/pathAdapter';
+import path from 'path';
+import { getName, getFilePath, getDirName, getUrl } from '../src/lib/pathParse';
+import pageloader from '../src/';
 
 const url1 = 'http://hexlet.io/courses/';
 const url2 = 'http://nothexlet.io/notcourses.js';
@@ -15,7 +14,7 @@ describe('test pathAdapter', () => {
   const fileName2 = 'nothexlet-io-notcourses.js';
 
   test('test getPath', () => {
-    expect(getPath(testDir, url1)).toBe('/var/tmp/hexlet-io-courses.html');
+    expect(getFilePath(testDir, url1)).toBe('/var/tmp/hexlet-io-courses.html');
   });
 
   test('test getName', () => {
@@ -24,7 +23,7 @@ describe('test pathAdapter', () => {
   });
 
   test('test getFolder', () => {
-    expect(getFolder(testDir, url1)).toBe('/var/tmp/hexlet-io-courses_files');
+    expect(getDirName(testDir, url1)).toBe('/var/tmp/hexlet-io-courses_files');
   });
 
   test('test getUrl', () => {
@@ -34,28 +33,31 @@ describe('test pathAdapter', () => {
   });
 });
 
-describe('test parsing html', () => {
-  test('test url parse to local', () => {
-    expect(parseUrl(testDir, '/lalala/dada.txt'))
-      .toBe('file:///var/tmp/lalala-dada.txt');
-    expect(parseUrl(testDir, url2))
-      .toBe('file:///var/tmp/nothexlet-io-notcourses.js');
-  });
-});
-
 describe('test loader', () => {
   let dir;
+  const testPath = './__tests__/__fixtures__';
+  const htmlBefore = path.resolve(testPath, 'html_before_parse.html');
+  const data = fs.readFileSync(htmlBefore, 'utf8');
+  const resourses = [
+    'cdn2-hexlet-io-attachments-8bb56fd2beb3e373d72ebece2bad1c55d5939a8d-store-1f37bdd55104906c2047752c5b5fff0e76638e3de7388037b29f15ce6da7-image.png',
+    'polyfill-io-v2-polyfill-min.js',
+    'en-hexlet-io-lessons.rss',
+  ];
 
   beforeEach(() => {
-    const data = 'data';
     dir = fs.mkdtempSync(`${os.tmpdir()}/`);
-    nock(url1).get('/').reply(200, data);
+    nock('http://hexlet.io').get('/courses/').reply(200, data);
   });
 
-  test('test loadAndWrite correct', done =>
-    loadAndWrite(url1, dir)
-    .then(() => fs.readFile(getPath(dir, url1), 'utf8'))
-      .then(data => expect(data).toBe(data))
+  test('test load ', done =>
+    pageloader(dir, url1)
+      .then(result => expect(result).toBe('Done!'))
+      .then(() => fs.exists(getFilePath(dir, url1)))
+      .then(result => expect(result).toBe(true))
+      .then(() =>
+        Promise.all(resourses.map(item =>
+          fs.exists(path.resolve(dir, 'hexlet-io-courses_files', item)))))
+      .then(result => expect(result).not.toContain(false))
       .then(done)
       .catch(done.fail));
 });
