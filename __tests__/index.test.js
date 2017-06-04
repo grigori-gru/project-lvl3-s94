@@ -60,4 +60,10 @@ describe('test loader', () => {
       .then(result => expect(result).not.toContain(false))
       .then(done)
       .catch(done.fail));
+
+  // test('test error', done =>
+  //   pageloader(dir, url2)
+  //     .then(result => expect(result).toBe('Done!'))
+  //     .then(done)
+  //     .catch(done.fail));
 });

@@ -5,7 +5,9 @@ import debug from 'debug';
 import axios from './lib/axios';
 import { getUrl, getName, getDirName, getFilePath } from './lib/pathParse';
 
-const flag = debug('page-loader');
+const loadFlag = debug('page-loader:load');
+const dirFlag = debug('page-loader:dir');
+const updFlag = debug('page-loader:upd');
 
 const loadAndSave = (address, dir, homeUrl = '') => {
   const itemName = getName(address);
@@ -14,7 +16,7 @@ const loadAndSave = (address, dir, homeUrl = '') => {
 
   return axios.get(newAddress, { responseType: 'arraybuffer' })
     .then((res) => {
-      flag('\x1b[36m', `file ${newAddress} loaded`);
+      loadFlag('\x1b[36m', `file ${newAddress} loaded`);
       return fs.writeFile(itemPath, res.data);
     })
     .catch(err => err);
@@ -61,7 +63,7 @@ export default (dir, address) => {
 
   return fs.mkdir(rootDir)
     .then(() => {
-      flag('\x1b[33m', `dir ${rootDir} is made`);
+      dirFlag('\x1b[33m', `dir ${rootDir} is made`);
       return loadAndSave(address, dir);
     })
     .then(() => fs.readFile(pathFile, 'utf8'))
@@ -70,7 +72,7 @@ export default (dir, address) => {
       return fs.writeFile(pathFile, parsedData.newHtml);
     })
     .then(() => {
-      flag('\x1b[34m', 'HTML updated');
+      updFlag('\x1b[34m', 'HTML updated');
       return Promise.all(parsedData.links.map(itemUrl =>
         loadAndSave(itemUrl, rootDir, address)));
     })
