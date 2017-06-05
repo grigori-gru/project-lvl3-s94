@@ -78,8 +78,12 @@ export default (dir, address) => {
     .then(() => 'Done!')
     .catch((err) => {
       console.log('Houston, we have a problem...');
+      console.log(err);
       const errCode = err.response ? err.response.status : err.code;
       switch (errCode) {
+        case 'EEXIST':
+          console.error(`Folder '${rootDir}' is already exists, remove it or choose another directory!`);
+          break;
         case 'ENOENT':
           console.error(`No such directory '${dir}' in your file system, just try to choose another!`);
           break;

@@ -35,6 +35,7 @@ describe('test pathAdapter', () => {
 
 describe('test loader', () => {
   let dir;
+  let dirExists;
   const testPath = './__tests__/__fixtures__';
   const htmlBefore = path.resolve(testPath, 'html_before_parse.html');
   const data = fs.readFileSync(htmlBefore, 'utf8');
@@ -53,7 +54,8 @@ describe('test loader', () => {
     .reply(404, null);
   });
 
-  test('test load ', done =>
+  test('test load ', (done) => {
+    dirExists = dir;
     pageloader(dir, url1)
       .then(result => expect(result).toBe('Done!'))
       .then(() => fs.exists(getFilePath(dir, url1)))
@@ -63,11 +65,18 @@ describe('test loader', () => {
           fs.exists(path.resolve(dir, 'hexlet-io-courses_files', item)))))
       .then(result => expect(result).not.toContain(false))
       .then(done)
-      .catch(done.fail));
+      .catch(done.fail);
+  });
 
-  test('test mkdir error', done =>
+  test('test no dir error', done =>
     pageloader('/tmp/test1', url1)
       .then(result => expect(result).toBe('ENOENT'))
+      .then(done)
+      .catch(done.fail));
+
+  test('test folder exists error', done =>
+    pageloader(dirExists, url1)
+      .then(result => expect(result).toBe('EEXIST'))
       .then(done)
       .catch(done.fail));
 
