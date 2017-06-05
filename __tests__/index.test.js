@@ -57,7 +57,7 @@ describe('test loader', () => {
   test('test load ', (done) => {
     dirExists = dir;
     pageloader(dir, url1)
-      .then(result => expect(result).toBe('Done!'))
+      .then(result => expect(result).toBe(0))
       .then(() => fs.exists(getFilePath(dir, url1)))
       .then(result => expect(result).toBe(true))
       .then(() =>
@@ -70,19 +70,19 @@ describe('test loader', () => {
 
   test('test no dir error', done =>
     pageloader('/tmp/test1', url1)
-      .then(result => expect(result).toBe('ENOENT'))
+      .then(result => expect(result).toBe(1))
       .then(done)
       .catch(done.fail));
 
   test('test folder exists error', done =>
     pageloader(dirExists, url1)
-      .then(result => expect(result).toBe('EEXIST'))
+      .then(result => expect(result).toBe(1))
       .then(done)
       .catch(done.fail));
 
   test('test request error', done =>
     pageloader(dir, 'http://hexlet.io/notcourses/')
-      .then(result => expect(result).toBe(404))
+      .then(result => expect(result).toBe(1))
       .then(done)
       .catch(done.fail));
 });
