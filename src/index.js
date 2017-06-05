@@ -78,7 +78,6 @@ export default (dir, address) => {
     .then(() => 'Done!')
     .catch((err) => {
       console.log('Houston, we have a problem...');
-      console.log(err);
       const errCode = err.response ? err.response.status : err.code;
       switch (errCode) {
         case 'EEXIST':
