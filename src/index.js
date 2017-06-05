@@ -76,5 +76,13 @@ export default (dir, address) => {
         loadAndSave(itemUrl, rootDir, address)));
     })
     .then(() => 0)
-    .catch(() => 1);
+    .catch((err) => {
+      const errCode = err.response ? err.response.status : err.code;
+      const result = {
+        EEXIST: 1,
+        ENOENT: 2,
+        404: 3,
+      };
+      return result[errCode];
+    });
 };

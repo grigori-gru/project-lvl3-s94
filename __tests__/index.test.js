@@ -70,7 +70,7 @@ describe('test loader', () => {
 
   test('test no dir error', done =>
     pageloader('/tmp/test1', url1)
-      .then(result => expect(result).toBe(1))
+      .then(result => expect(result).toBe(2))
       .then(done)
       .catch(done.fail));
 
@@ -82,7 +82,7 @@ describe('test loader', () => {
 
   test('test request error', done =>
     pageloader(dir, 'http://hexlet.io/notcourses/')
-      .then(result => expect(result).toBe(1))
+      .then(result => expect(result).toBe(3))
       .then(done)
       .catch(done.fail));
 });
