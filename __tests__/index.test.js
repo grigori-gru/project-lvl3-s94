@@ -46,7 +46,11 @@ describe('test loader', () => {
 
   beforeEach(() => {
     dir = fs.mkdtempSync(`${os.tmpdir()}/`);
-    nock('http://hexlet.io').get('/courses/').reply(200, data);
+    nock('http://hexlet.io')
+    .get('/courses/')
+    .reply(200, data)
+    .get('/notcourses/')
+    .reply(404, null);
   });
 
   test('test load ', done =>
@@ -61,9 +65,15 @@ describe('test loader', () => {
       .then(done)
       .catch(done.fail));
 
-  // test('test error', done =>
-  //   pageloader(dir, url2)
-  //     .then(result => expect(result).toBe('Done!'))
-  //     .then(done)
-  //     .catch(done.fail));
+  test('test mkdir error', done =>
+    pageloader('/tmp/test1', url1)
+      .then(result => expect(result).toBe('ENOENT'))
+      .then(done)
+      .catch(done.fail));
+
+  test('test request error', done =>
+    pageloader(dir, 'http://hexlet.io/notcourses/')
+      .then(result => expect(result).toBe(404))
+      .then(done)
+      .catch(done.fail));
 });
