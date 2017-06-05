@@ -9,10 +9,6 @@ program
   .arguments('<first_config> <second_config>')
   .action((dir, url) => {
     load(dir, url)
-      .then((status) => {
-        console.log(`Load is done! Status = ${status}!`);
-        process.exit(0);
-      })
       .catch((err) => {
         console.log('Houston, we have a problem...');
         const errCode = err.response ? err.response.status : err.code;
