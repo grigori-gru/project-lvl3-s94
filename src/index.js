@@ -1,13 +1,14 @@
 import url from 'url';
 import cheerio from 'cheerio';
 import fs from 'mz/fs';
+import Listr from 'listr';
 import debug from 'debug';
 import axios from './lib/axios';
 import { getUrl, getName, getDirName, getFilePath } from './lib/pathParse';
 
 const loadFlag = debug('page-loader:load');
 const dirFlag = debug('page-loader:dir');
-const updFlag = debug('page-loader:upd');
+const updateFlag = debug('page-loader:update');
 
 const loadAndSave = (address, dir, homeUrl = '') => {
   const itemName = getName(address);
@@ -15,10 +16,8 @@ const loadAndSave = (address, dir, homeUrl = '') => {
   const newAddress = getUrl(address, homeUrl);
 
   return axios.get(newAddress, { responseType: 'arraybuffer' })
-    .then((res) => {
-      loadFlag('\x1b[36m', `file ${newAddress} loaded`);
-      return fs.writeFile(itemPath, res.data);
-    });
+    .then(res => fs.writeFile(itemPath, res.data))
+    .then(() => loadFlag('\x1b[33m', `page ${newAddress} is loaded`));
 };
 
 const parseUrl = (dir, item) => {
@@ -60,29 +59,36 @@ export default (dir, address) => {
   const pathFile = getFilePath(dir, address);
   let parsedData;
 
-  return fs.mkdir(rootDir)
-    .then(() => {
-      dirFlag('\x1b[33m', `dir ${rootDir} is made`);
-      return loadAndSave(address, dir);
-    })
-    .then(() => fs.readFile(pathFile, 'utf8'))
-    .then((data) => {
-      parsedData = parseHTML(data, rootDir);
-      return fs.writeFile(pathFile, parsedData.newHtml);
-    })
-    .then(() => {
-      updFlag('\x1b[34m', 'HTML updated');
-      return Promise.all(parsedData.links.map(itemUrl =>
-        loadAndSave(itemUrl, rootDir, address)));
-    })
+  const tasks = new Listr([
+    {
+      title: 'Making directory',
+      task: () =>
+        fs.mkdir(rootDir)
+          .then(() => dirFlag('\x1b[33m', `dir ${rootDir} is made`)),
+    },
+    {
+      title: 'Load page main page',
+      task: () => loadAndSave(address, dir),
+    },
+    {
+      title: 'Parsing data',
+      task: () =>
+        fs.readFile(pathFile, 'utf8')
+          .then((data) => {
+            parsedData = parseHTML(data, rootDir);
+            return fs.writeFile(pathFile, parsedData.newHtml);
+          })
+          .then(() => updateFlag('\x1b[33m', 'HTML updated')),
+    },
+    {
+      title: 'Load resourses',
+      task: () =>
+        Promise.all(parsedData.links.map(itemUrl =>
+          loadAndSave(itemUrl, rootDir, address))),
+    },
+  ]);
+
+  return tasks.run()
     .then(() => 0)
-    .catch((err) => {
-      const errCode = err.response ? err.response.status : err.code;
-      const result = {
-        EEXIST: 1,
-        ENOENT: 2,
-        404: 3,
-      };
-      return Promise.reject(result[errCode]);
-    });
+    .catch(err => Promise.reject(err));
 };
