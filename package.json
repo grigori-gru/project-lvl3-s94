@@ -1,6 +1,6 @@
 {
   "name": "pro3",
-  "version": "1.5.3",
+  "version": "1.5.5",
   "description": "page loader",
   "main": "index.js",
   "bin": {
