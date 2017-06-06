@@ -9,22 +9,16 @@ program
   .arguments('<first_config> <second_config>')
   .action((dir, url) => {
     load(dir, url)
+      .then(() =>
+        console.log(`\n\n\t\tPage ${url} and resourses loaded successfully to ${dir}!!!\n\n`))
       .catch((err) => {
-        console.log('Houston, we have a problem...');
-        const errCode = err.response ? err.response.status : err.code;
-        switch (errCode) {
-          case 1:
-            console.error('Folder is already exists, remove it or choose another directory!');
-            break;
-          case 2:
-            console.error('No such directory in your file system, just try to choose another!');
-            break;
-          case 3:
-            console.error(`Request to address '${url}' got error, just try to check it!`);
-            break;
-          default:
-            console.log('UnKnown error.');
-        }
+        console.log('\x1b[31m', 'Houston, we have a problem...');
+        const text = {
+          1: 'Folder is already exists, remove it or choose another directory!',
+          2: `No such directory ${dir} in your file system, just try to choose another!`,
+          3: `Request to address '${url}' got error, just try to check it!`,
+        };
+        console.error('\x1b[33m', text[err] || 'UnKnown error.');
         process.exit(err);
       });
   });

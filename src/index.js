@@ -83,6 +83,6 @@ export default (dir, address) => {
         ENOENT: 2,
         404: 3,
       };
-      return result[errCode];
+      return Promise.reject(result[errCode]);
     });
 };

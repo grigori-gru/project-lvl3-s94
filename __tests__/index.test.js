@@ -70,19 +70,19 @@ describe('test loader', () => {
 
   test('test no dir error', done =>
     pageloader('/tmp/test1', url1)
-      .then(result => expect(result).toBe(2))
+      .catch(result => expect(result).toBe(2))
       .then(done)
       .catch(done.fail));
 
   test('test folder exists error', done =>
     pageloader(dirExists, url1)
-      .then(result => expect(result).toBe(1))
+      .catch(result => expect(result).toBe(1))
       .then(done)
       .catch(done.fail));
 
   test('test request error', done =>
     pageloader(dir, 'http://hexlet.io/notcourses/')
-      .then(result => expect(result).toBe(3))
+      .catch(result => expect(result).toBe(3))
       .then(done)
       .catch(done.fail));
 });
